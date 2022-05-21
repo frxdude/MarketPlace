@@ -1,6 +1,7 @@
 package com.diplom.marketplace.service;
 
 import com.diplom.marketplace.dto.request.user.UserRegisterRequest;
+import com.diplom.marketplace.dto.request.user.UserUpdateRequest;
 import com.diplom.marketplace.entity.enums.Role;
 import com.diplom.marketplace.entity.User;
 import com.diplom.marketplace.exception.BusinessException;
@@ -25,5 +26,7 @@ public interface UserService {
     User findById(String id) throws BusinessException;
 
     void register(UserRegisterRequest registerRequest, HttpServletRequest req) throws BusinessException;
+
+    User update(String id, UserUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException;
 
 }

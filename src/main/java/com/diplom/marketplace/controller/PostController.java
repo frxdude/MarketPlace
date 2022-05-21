@@ -49,14 +49,13 @@ public class PostController {
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
     @RequestMapping(value = "", method = RequestMethod.GET)
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public ResponseEntity<Object> findAllUser(@RequestParam String searchPattern,
+    public ResponseEntity<Object> findAll(@RequestParam String searchPattern,
                                               @RequestParam int page,
                                               @RequestParam int size,
-                                              @RequestParam long minPrice,
-                                              @RequestParam long maxPrice,
-                                              @RequestParam float minArea,
-                                              @RequestParam float maxArea,
+                                              @RequestParam(required = false, defaultValue = "0") long minPrice,
+                                              @RequestParam(required = false, defaultValue = "0") long maxPrice,
+                                              @RequestParam(required = false, defaultValue = "0") float minArea,
+                                              @RequestParam(required = false, defaultValue = "0") float maxArea,
                                               HttpServletRequest req) {
         return ResponseEntity.ok(service.findAll(searchPattern, page, size, minPrice, maxPrice, minArea, maxArea, req));
     }
@@ -71,7 +70,7 @@ public class PostController {
     })
     @RequestMapping(value = "", method = RequestMethod.POST)
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public ResponseEntity<Object> register(@Valid @RequestBody PostAddRequest addRequest, HttpServletRequest req) throws BusinessException {
+    public ResponseEntity<Object> add(@Valid @RequestBody PostAddRequest addRequest, HttpServletRequest req) throws BusinessException {
         service.add(addRequest, req);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -86,7 +85,7 @@ public class PostController {
     })
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public ResponseEntity<Object> register(@PathVariable String id, @Valid @RequestBody PostUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
+    public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody PostUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
         return ResponseEntity.ok(service.update(id, updateRequest, req));
     }
 

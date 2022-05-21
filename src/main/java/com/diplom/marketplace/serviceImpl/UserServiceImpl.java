@@ -1,6 +1,7 @@
 package com.diplom.marketplace.serviceImpl;
 
 import com.diplom.marketplace.dto.request.user.UserRegisterRequest;
+import com.diplom.marketplace.dto.request.user.UserUpdateRequest;
 import com.diplom.marketplace.entity.enums.Role;
 import com.diplom.marketplace.entity.User;
 import com.diplom.marketplace.exception.BusinessException;
@@ -51,8 +52,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * @param searchPattern String
-     * @param page int
-     * @param size int
+     * @param page          int
+     * @param size          int
      * @return Page of {@link User}
      * @author Sainjargal Ishdorj
      **/
@@ -71,8 +72,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * @param searchPattern String
-     * @param page int
-     * @param size int
+     * @param page          int
+     * @param size          int
      * @return Page of {@link User}
      * @author Sainjargal Ishdorj
      **/
@@ -91,8 +92,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * @param searchPattern String
-     * @param page int
-     * @param size int
+     * @param page          int
+     * @param size          int
      * @return Page of {@link User}
      * @author Sainjargal Ishdorj
      **/
@@ -149,8 +150,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * @param registerRequest {@link UserRegisterRequest}
-     * @param req servletRequest
-     * @throws BusinessException thrown when username or password doesn't match
+     * @param req             servletRequest
+     * @throws BusinessException thrown when user already exists
      * @author Sainjargal Ishdorj
      **/
 
@@ -174,6 +175,34 @@ public class UserServiceImpl implements UserService {
             throw ex;
         } catch (Exception ex) {
             Logger.fatal(getClass().getName(), "[register][" + ex.getMessage() + "]", ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * @param id            String
+     * @param updateRequest {@link UserUpdateRequest}
+     * @param req           servletRequest
+     * @throws BusinessException thrown when user not found
+     * @author Sainjargal Ishdorj
+     **/
+
+    public User update(String id, UserUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
+        try {
+            Logger.info(getClass().getName(), "[update][input][" + updateRequest.toString() + "]");
+            User user = findById(id);
+            user.setEmail(updateRequest.getEmail());
+            user.setFirstname(updateRequest.getFirstname());
+            user.setLastname(updateRequest.getLastname());
+            user.setPhone(updateRequest.getPhone());
+            repository.save(user);
+            Logger.info(getClass().getName(), "[update][output][User(email=" + user.getEmail() + ", firstname=" + user.getFirstname() + ", lastname=" + user.getLastname() + ")]");
+            return user;
+        } catch (BusinessException ex) {
+            Logger.warn(getClass().getName(), "[update][" + ex.reason + "]");
+            throw ex;
+        } catch (Exception ex) {
+            Logger.fatal(getClass().getName(), "[update][" + ex.getMessage() + "]", ex);
             throw ex;
         }
     }

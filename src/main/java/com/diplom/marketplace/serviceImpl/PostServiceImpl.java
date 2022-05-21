@@ -69,7 +69,7 @@ public class PostServiceImpl implements PostService {
 
     public Page<Post> findAll(String searchPattern, int page, int size, long minPrice, long maxPrice, float minArea, float maxArea, HttpServletRequest req) {
         try {
-            Logger.info(getClass().getName(), "[findAll][input][page=" + page + ", size=" + size + ", minPrice=" + minPrice + ", maxPrice=" + maxPrice + "]");
+            Logger.info(getClass().getName(), "[findAll][input][page=" + page + ", size=" + size + ", minPrice=" + minPrice + ", maxPrice=" + maxPrice + ", minArea=" + minArea + ", maxArea=" + maxArea + "]");
 
             titleSpec = StringUtils.isNotBlank(searchPattern)
                     ? new PostSpecification(new SearchCriteria("title", ".%", searchPattern))

@@ -32,8 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/**").permitAll()
                 .antMatchers("/auth/**").permitAll()
-                .antMatchers("/statements/xml").permitAll()
-                .antMatchers("/transaction", HttpMethod.POST.name()).permitAll()
+                .antMatchers("/posts", HttpMethod.GET.name()).permitAll()
                 .anyRequest().authenticated();
         http.exceptionHandling().accessDeniedPage("/login");
         http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));
