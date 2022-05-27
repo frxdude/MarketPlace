@@ -69,7 +69,7 @@ public class PostController {
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
     @RequestMapping(value = "", method = RequestMethod.POST)
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<Object> add(@Valid @RequestBody PostAddRequest addRequest, HttpServletRequest req) throws BusinessException {
         service.add(addRequest, req);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -84,7 +84,7 @@ public class PostController {
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody PostUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
         return ResponseEntity.ok(service.update(id, updateRequest, req));
     }
@@ -98,7 +98,7 @@ public class PostController {
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<Object> delete(@PathVariable String id,
                                          HttpServletRequest req) throws BusinessException {
         service.delete(id, req);

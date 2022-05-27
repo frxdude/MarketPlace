@@ -4,6 +4,7 @@ import com.diplom.marketplace.dto.request.post.PostAddRequest;
 import com.diplom.marketplace.dto.request.post.PostUpdateRequest;
 import com.diplom.marketplace.entity.Post;
 import com.diplom.marketplace.entity.PostImage;
+import com.diplom.marketplace.entity.User;
 import com.diplom.marketplace.entity.enums.PostTypes;
 import com.diplom.marketplace.exception.BusinessException;
 import com.diplom.marketplace.helper.Localization;
@@ -12,6 +13,7 @@ import com.diplom.marketplace.helper.specification.SearchCriteria;
 import com.diplom.marketplace.repository.PostImageRepository;
 import com.diplom.marketplace.repository.PostRepository;
 import com.diplom.marketplace.service.PostService;
+import com.diplom.marketplace.service.UserService;
 import com.diplom.marketplace.util.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +37,15 @@ import java.util.Collections;
 public class PostServiceImpl implements PostService {
 
     PostRepository repository;
+    UserService userService;
     PostImageRepository postImageRepository;
     PostSpecification minPriceSpec, maxPriceSpec, minAreaSpec, maxAreaSpec, titleSpec;
     Localization localization;
 
     @Autowired
-    public PostServiceImpl(PostRepository repository, PostImageRepository postImageRepository, PostSpecification minPriceSpec, PostSpecification maxPriceSpec, PostSpecification minAreaSpec, PostSpecification maxAreaSpec, PostSpecification titleSpec, Localization localization) {
+    public PostServiceImpl(PostRepository repository, UserService userService, PostImageRepository postImageRepository, PostSpecification minPriceSpec, PostSpecification maxPriceSpec, PostSpecification minAreaSpec, PostSpecification maxAreaSpec, PostSpecification titleSpec, Localization localization) {
         this.repository = repository;
+        this.userService = userService;
         this.postImageRepository = postImageRepository;
         this.minPriceSpec = minPriceSpec;
         this.maxPriceSpec = maxPriceSpec;
@@ -76,19 +80,19 @@ public class PostServiceImpl implements PostService {
                     : new PostSpecification();
 
             minPriceSpec = minPrice != 0
-                    ? new PostSpecification(new SearchCriteria("price", "<", minPrice))
+                    ? new PostSpecification(new SearchCriteria("price", ">=", minPrice))
                     : new PostSpecification();
 
             maxPriceSpec = maxPrice != 0
-                    ? new PostSpecification(new SearchCriteria("price", ">", maxPrice))
+                    ? new PostSpecification(new SearchCriteria("price", "<=", maxPrice))
                     : new PostSpecification();
 
             minAreaSpec = minArea != 0
-                    ? new PostSpecification(new SearchCriteria("area", ">", minArea))
+                    ? new PostSpecification(new SearchCriteria("area", ">=", minArea))
                     : new PostSpecification();
 
-            maxAreaSpec = minArea != 0
-                    ? new PostSpecification(new SearchCriteria("area", "<", maxArea))
+            maxAreaSpec = maxArea != 0
+                    ? new PostSpecification(new SearchCriteria("area", "<=", maxArea))
                     : new PostSpecification();
 
             Page<Post> postPage = repository.findAll(minPriceSpec.and(maxPriceSpec.and(maxAreaSpec.and(minAreaSpec.and(titleSpec)))), PageRequest.of(page, size, Sort.by("id").descending()));
@@ -100,15 +104,17 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    public void add(PostAddRequest addRequest, HttpServletRequest req) {
+    public void add(PostAddRequest addRequest, HttpServletRequest req) throws BusinessException{
         try {
             Logger.info(getClass().getName(), "[add][input][" + addRequest.toString() + "]");
+            User user = userService.findById(req.getRemoteUser());
             Post post = Post.builder()
                     .title(addRequest.getTitle())
                     .description(addRequest.getDescription())
                     .address(addRequest.getAddress())
                     .area(addRequest.getArea())
                     .rooms(addRequest.getRooms())
+                    .user(user)
                     .postTypes(Collections.singletonList(addRequest.getPostType() == 0 ?  PostTypes.POST_PLACE : PostTypes.POST_APARTMENT))
                     .build();
             repository.save(post);
@@ -122,6 +128,9 @@ public class PostServiceImpl implements PostService {
                 postImageRepository.save(postImage);
             }
             Logger.info(getClass().getName(), "[add][output][]");
+        } catch (BusinessException ex) {
+            Logger.warn(getClass().getName(), "[add][" + ex.reason + "]");
+            throw ex;
         } catch (Exception ex) {
             Logger.fatal(getClass().getName(), "[add][" + ex.getMessage() + "]", ex);
             throw ex;
@@ -132,6 +141,10 @@ public class PostServiceImpl implements PostService {
         try {
             Logger.info(getClass().getName(), "[update][input][id=" + id + "]");
             Post post = find(id, req);
+
+            if(!post.getUser().getId().equals(req.getRemoteUser()))
+                throw new BusinessException(localization.getMessage("data.owner"), "Permission denied");
+
             post.setArea(updateRequest.getArea());
             post.setTitle(updateRequest.getTitle());
             post.setDescription(updateRequest.getDescription());

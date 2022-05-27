@@ -1,7 +1,7 @@
 package com.diplom.marketplace.entity;
 
 import com.diplom.marketplace.entity.enums.PostTypes;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import javax.persistence.*;
@@ -53,6 +53,13 @@ public class Post extends Audit {
             mappedBy = "post",
             fetch = FetchType.LAZY)
     private List<PostImage> postImages = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JoinColumn(name = "USER_ID")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    private User user;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<PostTypes> postTypes;

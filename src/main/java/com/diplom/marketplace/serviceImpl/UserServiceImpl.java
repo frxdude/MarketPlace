@@ -2,6 +2,7 @@ package com.diplom.marketplace.serviceImpl;
 
 import com.diplom.marketplace.dto.request.user.UserRegisterRequest;
 import com.diplom.marketplace.dto.request.user.UserUpdateRequest;
+import com.diplom.marketplace.entity.Post;
 import com.diplom.marketplace.entity.enums.Role;
 import com.diplom.marketplace.entity.User;
 import com.diplom.marketplace.exception.BusinessException;
@@ -9,6 +10,7 @@ import com.diplom.marketplace.helper.Localization;
 import com.diplom.marketplace.helper.specification.SearchCriteria;
 import com.diplom.marketplace.helper.specification.PostSpecification;
 import com.diplom.marketplace.helper.specification.UserSpecification;
+import com.diplom.marketplace.repository.PostRepository;
 import com.diplom.marketplace.repository.UserRepository;
 import com.diplom.marketplace.service.UserService;
 import com.diplom.marketplace.util.Logger;
@@ -34,13 +36,16 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     UserRepository repository;
+    PostRepository postRepository;
     Localization localization;
     PasswordEncoder encoder;
     UserSpecification firstnameSpec, lastnameSpec, emailSpec, phoneSpec, roleSpec;
+    PostSpecification titleSpec, userSpec;
 
     @Autowired
-    public UserServiceImpl(UserRepository repository, Localization localization, PasswordEncoder encoder, UserSpecification firstnameSpec, UserSpecification lastnameSpec, UserSpecification emailSpec, UserSpecification phoneSpec, UserSpecification roleSpec) {
+    public UserServiceImpl(UserRepository repository, PostRepository postRepository, Localization localization, PasswordEncoder encoder, UserSpecification firstnameSpec, UserSpecification lastnameSpec, UserSpecification emailSpec, UserSpecification phoneSpec, UserSpecification roleSpec, PostSpecification titleSpec, PostSpecification userSpec) {
         this.repository = repository;
+        this.postRepository = postRepository;
         this.localization = localization;
         this.encoder = encoder;
         this.firstnameSpec = firstnameSpec;
@@ -48,6 +53,8 @@ public class UserServiceImpl implements UserService {
         this.emailSpec = emailSpec;
         this.phoneSpec = phoneSpec;
         this.roleSpec = roleSpec;
+        this.titleSpec = titleSpec;
+        this.userSpec = userSpec;
     }
 
     /**
@@ -58,48 +65,10 @@ public class UserServiceImpl implements UserService {
      * @author Sainjargal Ishdorj
      **/
 
-    public Page<User> findAllUser(String searchPattern, int page, int size, HttpServletRequest req) {
+    public Page<User> findAll(String searchPattern, int page, int size, HttpServletRequest req) {
         try {
-            Logger.info(getClass().getName(), "[findAllUser][input][searchPattern=" + searchPattern + ", page=" + page + ", size=" + size + "]");
-            Page<User> userPage = findAll(searchPattern, page, size, Role.ROLE_USER, req);
-            Logger.info(getClass().getName(), "[findAllUser][output][size=" + userPage.getSize() + ", totalElements" + userPage.getTotalElements() + "]");
-            return userPage;
-        } catch (Exception ex) {
-            Logger.fatal(getClass().getName(), "[findAllUser][" + ex.getMessage() + "]", ex);
-            throw ex;
-        }
-    }
+            Logger.info(getClass().getName(), "[findAll][input][searchPattern=" + searchPattern + ", page=" + page + ", size= " + size + "]");
 
-    /**
-     * @param searchPattern String
-     * @param page          int
-     * @param size          int
-     * @return Page of {@link User}
-     * @author Sainjargal Ishdorj
-     **/
-
-    public Page<User> findAllAdmin(String searchPattern, int page, int size, HttpServletRequest req) {
-        try {
-            Logger.info(getClass().getName(), "[findAllAdmin][input][searchPattern=" + searchPattern + ", page=" + page + ", size=" + size + "]");
-            Page<User> userPage = findAll(searchPattern, page, size, Role.ROLE_ADMIN, req);
-            Logger.info(getClass().getName(), "[findAllAdmin][output][size=" + userPage.getSize() + ", totalElements" + userPage.getTotalElements() + "]");
-            return userPage;
-        } catch (Exception ex) {
-            Logger.fatal(getClass().getName(), "[findAllAdmin][" + ex.getMessage() + "]", ex);
-            throw ex;
-        }
-    }
-
-    /**
-     * @param searchPattern String
-     * @param page          int
-     * @param size          int
-     * @return Page of {@link User}
-     * @author Sainjargal Ishdorj
-     **/
-
-    public Page<User> findAll(String searchPattern, int page, int size, Role role, HttpServletRequest req) {
-        try {
             emailSpec = StringUtils.isNotBlank(searchPattern)
                     ? new UserSpecification(new SearchCriteria("email", ".%", searchPattern))
                     : new UserSpecification();
@@ -116,9 +85,11 @@ public class UserServiceImpl implements UserService {
                     ? new UserSpecification(new SearchCriteria("phone", ".%", searchPattern))
                     : new UserSpecification();
 
-            return repository.findAll(role.equals(Role.ROLE_ADMIN) ? 1L : 0L,
-                    emailSpec.or(firstnameSpec.or(lastnameSpec.or(phoneSpec))),
+            Page<User> userPage = repository.findAll(firstnameSpec.or(lastnameSpec.or(phoneSpec.or(emailSpec))),
                     PageRequest.of(page, size, Sort.by("id").descending()));
+
+            Logger.info(getClass().getName(), "[findAll][output][totalElements=" + userPage.getTotalElements() +", size=" + userPage.getSize() + "]");
+            return userPage;
         } catch (Exception ex) {
             Logger.fatal(getClass().getName(), "[findAll][" + ex.getMessage() + "]", ex);
             throw ex;
@@ -166,6 +137,7 @@ public class UserServiceImpl implements UserService {
                     .email(registerRequest.getEmail())
                     .password(encoder.encode(registerRequest.getPassword()))
                     .roles(Collections.singletonList(Role.ROLE_USER))
+                    .phone(registerRequest.getPhone())
                     .isActive(true)
                     .build());
 
@@ -180,17 +152,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param id            String
      * @param updateRequest {@link UserUpdateRequest}
      * @param req           servletRequest
      * @throws BusinessException thrown when user not found
      * @author Sainjargal Ishdorj
      **/
 
-    public User update(String id, UserUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
+    public User update(UserUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
         try {
             Logger.info(getClass().getName(), "[update][input][" + updateRequest.toString() + "]");
-            User user = findById(id);
+            User user = findById(req.getRemoteUser());
             user.setEmail(updateRequest.getEmail());
             user.setFirstname(updateRequest.getFirstname());
             user.setLastname(updateRequest.getLastname());
@@ -203,6 +174,63 @@ public class UserServiceImpl implements UserService {
             throw ex;
         } catch (Exception ex) {
             Logger.fatal(getClass().getName(), "[update][" + ex.getMessage() + "]", ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * @param id            String
+     * @param searchPattern String
+     * @param page          int
+     * @param size          int
+     * @param req           servletRequest
+     * @author Sainjargal Ishdorj
+     **/
+
+    public Page<Post> findPostsByUser(String id, String searchPattern, int page, int size, HttpServletRequest req) throws BusinessException {
+        try {
+            Logger.info(getClass().getName(), "[findPostsByUser][input][id=" + id + ", searchPattern=" + searchPattern + ", page=" + page + ", size=" + size + "]");
+            User user = findById(id);
+
+            titleSpec = StringUtils.isNotBlank(searchPattern)
+                    ? new PostSpecification(new SearchCriteria("title", ".%", searchPattern))
+                    : new PostSpecification();
+
+            userSpec = StringUtils.isNotBlank(id)
+                    ? new PostSpecification(new SearchCriteria("users", "<<", id))
+                    : new PostSpecification();
+
+            Page<Post> postPage = postRepository.findAll(titleSpec.and(userSpec), PageRequest.of(page, size));
+
+            Logger.info(getClass().getName(), "[findPostsByUser][output][User(email=" + user.getEmail() + ", firstname=" + user.getFirstname() + ", lastname=" + user.getLastname() + ")]");
+            return postPage;
+        } catch (BusinessException ex) {
+            Logger.warn(getClass().getName(), "[findPostsByUser][" + ex.reason + "]");
+            throw ex;
+        } catch (Exception ex) {
+            Logger.fatal(getClass().getName(), "[findPostsByUser][" + ex.getMessage() + "]", ex);
+            throw ex;
+        }
+    }
+
+
+    /**
+     * @param id  String
+     * @param req servletRequest
+     * @author Sainjargal Ishdorj
+     **/
+
+    public void delete(String id, HttpServletRequest req) throws BusinessException {
+        try {
+            Logger.info(getClass().getName(), "[delete][input][id=" + id + "]");
+            User user = findById(id);
+            repository.delete(user);
+            Logger.info(getClass().getName(), "[delete][output][]");
+        } catch (BusinessException ex) {
+            Logger.warn(getClass().getName(), "[delete][" + ex.reason + "]");
+            throw ex;
+        } catch (Exception ex) {
+            Logger.fatal(getClass().getName(), "[delete][" + ex.getMessage() + "]", ex);
             throw ex;
         }
     }

@@ -2,11 +2,13 @@ package com.diplom.marketplace.entity;
 
 import com.diplom.marketplace.entity.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javafx.geometry.Pos;
 import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +23,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties({"createdDate", "modifiedDate", "password", "isActive"})
+@JsonIgnoreProperties({"createdDate", "modifiedDate", "password", "isActive", "posts", "roles"})
 @Entity
 @Table(name = "USERS")
 public class User extends Audit {
@@ -55,6 +57,13 @@ public class User extends Audit {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Role> roles;
+
+    @OneToMany(targetEntity = Post.class,
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            mappedBy = "user",
+            fetch = FetchType.LAZY)
+    private List<Post> posts = new ArrayList<>();
 
     @PrePersist
     private void prePersist() {

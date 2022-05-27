@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 //    @Query(nativeQuery = true, value = "SELECT * FROM user u WHERE u.first_name LIKE :param% OR u.last_name LIKE :param% OR u.email LIKE :param% OR u.phone LIKE :param%")
-    @Query(nativeQuery = true, value = "SELECT * FROM users u INNER JOIN user_roles ur on u.id = ur.user_id WHERE ur.roles = ?1")
-    Page<User> findAll(@Param("role") Long role, Specification<User> specification, Pageable pageable);
+//    @Query(nativeQuery = true, value = "SELECT * FROM users u INNER JOIN user_roles ur on u.id = ur.user_id WHERE ur.roles = 0")
+    Page<User> findAll(Specification<User> specification, Pageable pageable);
 
     Optional<User> findById(String id);
 

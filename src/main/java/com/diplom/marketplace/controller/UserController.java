@@ -48,15 +48,33 @@ public class UserController {
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
     @RequestMapping(value = "", method = RequestMethod.GET)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-    public ResponseEntity<Object> findAllUser(@RequestParam String searchPattern,
-                                               @RequestParam int page,
-                                               @RequestParam int size,
-                                               HttpServletRequest req) {
-        return ResponseEntity.ok(service.findAllUser(searchPattern, page, size, req));
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<Object> findAll(@RequestParam(required = false) String searchPattern,
+                                          @RequestParam int page,
+                                          @RequestParam int size,
+                                          HttpServletRequest req) {
+        return ResponseEntity.ok(service.findAll(searchPattern, page, size, req));
     }
 
-    @ApiOperation(value = "Бүртгэх. | ", notes = "")
+    @ApiOperation(value = "Хэрэглэгчдийн өөрийн заруудыг харах. | ROLE_USER, ROLE_ADMIN", notes = "")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, response = Page.class, message = "{} Object буцна"),
+            @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 401, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 403, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
+    })
+    @RequestMapping(value = "{id}/posts", method = RequestMethod.GET)
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<Object> findPostsByUser(@PathVariable String id,
+                                                  @RequestParam(required = false) String searchPattern,
+                                                  @RequestParam int page,
+                                                  @RequestParam int size,
+                                                  HttpServletRequest req) throws BusinessException {
+        return ResponseEntity.ok(service.findPostsByUser(id, searchPattern, page, size, req));
+    }
+
+    @ApiOperation(value = "Бүртгүүлэх. | ", notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Body-гүй CREATED статус буцна"),
             @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
@@ -70,7 +88,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @ApiOperation(value = "Мэдээллээ шинэчлэх. | ", notes = "")
+    @ApiOperation(value = "Мэдээллээ шинэчлэх. | ROLE_USER", notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Body-гүй CREATED статус буцна"),
             @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
@@ -78,9 +96,25 @@ public class UserController {
             @ApiResponse(code = 403, response = ErrorResponse.class, message = "{} Object буцна"),
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
-    @RequestMapping(value = "{id}", method = RequestMethod.PUT)
-    public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody UserUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
-        return ResponseEntity.ok().body(service.update(id, updateRequest, req));
+    @PreAuthorize("hasAnyRole('ROLE_USER')")
+    @RequestMapping(value = "", method = RequestMethod.PUT)
+    public ResponseEntity<Object> update(@Valid @RequestBody UserUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException {
+        return ResponseEntity.ok().body(service.update(updateRequest, req));
+    }
+
+    @ApiOperation(value = "Хэрэглэгч устгах. | ROLE_ADMIN", notes = "")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Body-гүй CREATED статус буцна"),
+            @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 401, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 403, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
+    })
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Object> delete(@PathVariable String id, HttpServletRequest req) throws BusinessException {
+        service.delete(id, req);
+        return ResponseEntity.noContent().build();
     }
 
 }

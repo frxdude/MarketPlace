@@ -21,7 +21,7 @@ public interface PostService {
 
     Page<Post> findAll(String searchPattern, int page, int size, long minPrice, long maxPrice, float minArea, float maxArea, HttpServletRequest req);
 
-    void add(PostAddRequest addRequest, HttpServletRequest req);
+    void add(PostAddRequest addRequest, HttpServletRequest req) throws BusinessException;
 
     Post update(String id, PostUpdateRequest updateRequest, HttpServletRequest req) throws BusinessException;
 
