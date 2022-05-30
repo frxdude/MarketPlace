@@ -1,2 +1,2 @@
-2022-05-27 13:01:10.010  INFO  UserServiceImpl:15 - [findAll][input][searchPattern=sainaa, page=0, size= 20] -- 2ac41078-904e-447e-aed9-f9665113a944 -- 73d5ea79-c7a1-44a9-94c0-d975cef46281
-2022-05-27 13:01:10.010  INFO  UserServiceImpl:15 - [findAll][output][totalElements=2, size=20] -- 2ac41078-904e-447e-aed9-f9665113a944 -- 73d5ea79-c7a1-44a9-94c0-d975cef46281
+2022-05-31 02:05:13.013  INFO  PostServiceImpl:15 - [find][input][id=1] -- 0f344101-b191-4a0f-b098-520d0a98ad5c -- 
+2022-05-31 02:05:13.013  WARN  PostServiceImpl:18 - [find][Post data not found] -- 0f344101-b191-4a0f-b098-520d0a98ad5c -- 

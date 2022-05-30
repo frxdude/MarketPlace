@@ -40,7 +40,20 @@ public class PostController {
         this.service = service;
     }
 
-    @ApiOperation(value = "Мэдээллүүд татах. | ROLE_ADMIN", notes = "")
+    @ApiOperation(value = "Мэдээлэл татах. | ", notes = "")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, response = Page.class, message = "{} Object буцна"),
+            @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 401, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 403, response = ErrorResponse.class, message = "{} Object буцна"),
+            @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
+    })
+    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    public ResponseEntity<Object> find(@PathVariable String id, HttpServletRequest req) throws BusinessException {
+        return ResponseEntity.ok(service.find(id, req));
+    }
+
+    @ApiOperation(value = "Мэдээллүүд татах. | ", notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = 200, response = Page.class, message = "{} Object буцна"),
             @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),

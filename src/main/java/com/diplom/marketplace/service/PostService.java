@@ -7,7 +7,6 @@ import com.diplom.marketplace.exception.BusinessException;
 import org.springframework.data.domain.Page;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * PostService
