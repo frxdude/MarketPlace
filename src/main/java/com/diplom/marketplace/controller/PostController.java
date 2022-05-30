@@ -73,7 +73,7 @@ public class PostController {
         return ResponseEntity.ok(service.findAll(searchPattern, page, size, minPrice, maxPrice, minArea, maxArea, req));
     }
 
-    @ApiOperation(value = "Мэдээ нэмэх. | ROLE_USER", notes = "")
+    @ApiOperation(value = "Мэдээ нэмэх. | ROLE_USER, ROLE_ADMIN", notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = 201, response = Page.class, message = "Body-гүй Created статус буцна"),
             @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
@@ -82,13 +82,13 @@ public class PostController {
             @ApiResponse(code = 500, response = ErrorResponse.class, message = "{} Object буцна"),
     })
     @RequestMapping(value = "", method = RequestMethod.POST)
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'c')")
     public ResponseEntity<Object> add(@Valid @RequestBody PostAddRequest addRequest, HttpServletRequest req) throws BusinessException {
         service.add(addRequest, req);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @ApiOperation(value = "Мэдээний мэдээлэл засах. | ROLE_USER", notes = "")
+    @ApiOperation(value = "Мэдээний мэдээлэл засах. | ROLE_USER, ROLE_ADMIN", notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = 201, response = Post.class, message = "{} Object буцна"),
             @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),
@@ -102,7 +102,7 @@ public class PostController {
         return ResponseEntity.ok(service.update(id, updateRequest, req));
     }
 
-    @ApiOperation(value = "Зар устгах. | ROLE_USER", notes = "")
+    @ApiOperation(value = "Зар устгах. | ROLE_USER, ROLE_ADMIN", notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Body-гүй NoContent статус буцнаө"),
             @ApiResponse(code = 400, response = ErrorResponse.class, message = "{} Object буцна"),

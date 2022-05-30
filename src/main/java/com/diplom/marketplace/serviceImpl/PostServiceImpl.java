@@ -112,6 +112,7 @@ public class PostServiceImpl implements PostService {
                     .title(addRequest.getTitle())
                     .description(addRequest.getDescription())
                     .address(addRequest.getAddress())
+                    .price(addRequest.getPrice())
                     .area(addRequest.getArea())
                     .rooms(addRequest.getRooms())
                     .user(user)
